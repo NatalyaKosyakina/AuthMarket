@@ -36,7 +36,7 @@ namespace AuthMarket.db
 
             modelBuilder.Entity<Role>().Property(e => e.RoleID).HasConversion<int>();
 
-            modelBuilder.Entity<Role>().HasData(Enum.GetValues(typeof(UserRoleType)).Cast<UserRoleType>().Select(u =>
+            modelBuilder.Entity<Role>().HasData(Enum.GetValues(typeof(RoleType)).Cast<RoleType>().Select(u =>
                 new Role()
                 {
                     RoleID = u,

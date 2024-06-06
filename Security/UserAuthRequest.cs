@@ -9,6 +9,6 @@ namespace AuthMarket.Security
         public string Email { get; set; }
         [Required]
         public string Password { get; set; }
-        public AuthMarket.Model.UserRoleType UserRole { get; set; } = AuthMarket.Model.UserRoleType.User;
+        public AuthMarket.Model.RoleType UserRole { get; set; } = AuthMarket.Model.RoleType.User;
     }
 }

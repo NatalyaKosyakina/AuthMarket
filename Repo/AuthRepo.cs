@@ -10,7 +10,7 @@ namespace AuthMarket.Repo
     {
         private readonly AuthContext _context = context;
 
-        public void AddUser(string email, string password, UserRoleType userRoleType)
+        public void AddUser(string email, string password, RoleType userRoleType)
         {
             var checkUser = _context.users.FirstOrDefault(user => user.Email == email);
 
@@ -27,9 +27,27 @@ namespace AuthMarket.Repo
             }
         }
 
-        public UserRoleType CheckRole(string email, string password)
+        public RoleType CheckRole(string email, string password)
         {
-            throw new NotImplementedException();
+            var user = _context.users.FirstOrDefault(user => user.Email.Equals(email));
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+            else
+            {
+                var hash = new SHA512Managed().
+                    ComputeHash(Encoding.UTF8.GetBytes(password).
+                    Concat(user.Salt).ToArray());
+                if (hash.Equals(user.Password))
+                {
+                    return user.RoleID;
+                }
+                else
+                {
+                    throw new Exception("Wrong password");
+                }
+            }
         }
     }
 }

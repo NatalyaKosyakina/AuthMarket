@@ -46,7 +46,7 @@ namespace AuthMarket.Controllers
         {
             try
             {
-                _userRepo.AddUser(userLogin.Email, userLogin.Password, UserRoleType.Admin);
+                _userRepo.AddUser(userLogin.Email, userLogin.Password, RoleType.Admin);
             }
             catch (Exception e)
             {
@@ -62,7 +62,7 @@ namespace AuthMarket.Controllers
         {
             try
             {
-                _userRepo.AddUser(userLogin.Email, userLogin.Password, UserRoleType.User);
+                _userRepo.AddUser(userLogin.Email, userLogin.Password, RoleType.User);
             }
             catch (Exception e)
             {
