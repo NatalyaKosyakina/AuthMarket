@@ -16,7 +16,7 @@ namespace AuthMarket.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -32,7 +32,7 @@ namespace AuthMarket.Migrations
 
                     b.HasKey("RoleID");
 
-                    b.ToTable("Role");
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -60,7 +60,7 @@ namespace AuthMarket.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
-                        .HasColumnName("name");
+                        .HasColumnName("email");
 
                     b.Property<byte[]>("Password")
                         .IsRequired()

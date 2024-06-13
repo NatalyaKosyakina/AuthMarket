@@ -3,6 +3,7 @@ using AuthMarket.db;
 using AuthMarket.Model;
 using System.Text;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthMarket.Repo
 {
@@ -10,35 +11,49 @@ namespace AuthMarket.Repo
     {
         private readonly AuthContext _context = context;
 
-        public void AddUser(string email, string password, RoleType userRoleType)
+        public int AddUser(string email, string password)
         {
-            var checkUser = _context.users.FirstOrDefault(user => user.Email == email);
-
-            if (checkUser == null)
+            bool thisIsAdmin = _context.Users.Count() == 0;
+            User? user = null;
+            if (!thisIsAdmin)
             {
+                user = _context.Users.FirstOrDefault(user => user.Email == email);
+            }
 
-                var newUser = new User() { Email = email, RoleID = userRoleType };
-                newUser.Salt = new byte[16];
-                new Random().NextBytes(newUser.Salt);
-                var data = Encoding.UTF8.GetBytes(password).Concat(newUser.Salt).ToArray();
-                newUser.Password = new SHA512Managed().ComputeHash(data);
-                _context.Add(newUser);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    Salt = new byte[16]
+                };
+                new Random().NextBytes(user.Salt);
+                var data = Encoding.UTF8.GetBytes(password).Concat(user.Salt).ToArray();
+                user.Password = SHA512.HashData(data);
+                if (thisIsAdmin)
+                {
+                    user.RoleID = RoleType.Admin;
+                }
+                else
+                {
+                    user.RoleID = RoleType.User;
+                }
+                _context.Add(user);
                 _context.SaveChanges();
             }
+            return user.Id;
         }
 
         public RoleType CheckRole(string email, string password)
         {
-            var user = _context.users.FirstOrDefault(user => user.Email.Equals(email));
+            var user = _context.Users.FirstOrDefault(user => user.Email.Equals(email));
             if (user == null)
             {
                 throw new Exception("User not found");
             }
             else
             {
-                var hash = new SHA512Managed().
-                    ComputeHash(Encoding.UTF8.GetBytes(password).
-                    Concat(user.Salt).ToArray());
+                var hash = SHA512.HashData(Encoding.UTF8.GetBytes(password).Concat(user.Salt).ToArray());
                 if (hash.Equals(user.Password))
                 {
                     return user.RoleID;

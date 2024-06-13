@@ -10,7 +10,7 @@ namespace AuthMarket.Services
     {
         public string CreateToken(string email, string roleName)
         {
-            var credentilas = new SigningCredentials(jwt.GetSigningKey(), SecurityAlgorithms.HmacSha256);
+            var credentials = new SigningCredentials(jwt.GetSigningKey(), SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
@@ -23,9 +23,10 @@ namespace AuthMarket.Services
                 audience: jwt.Audience,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: credentilas
+                signingCredentials: credentials
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
+
 }

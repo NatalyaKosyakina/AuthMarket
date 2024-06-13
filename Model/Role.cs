@@ -7,6 +7,6 @@ namespace AuthMarket.Model
         [Key]
         public RoleType RoleID { get; set; }
         public string RoleName { get; set; }
-        public virtual List<User> Users { get; set; }
+        public virtual List<User> Users { get; set; } = [];
     }
 }

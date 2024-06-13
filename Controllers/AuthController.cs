@@ -6,29 +6,23 @@ using AllowAnonymousAttribute = HotChocolate.Authorization.AllowAnonymousAttribu
 
 namespace AuthMarket.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController(IAuthRepo userRepo, ITokenService tokenService) : ControllerBase
     {
-        private readonly IAuthRepo _userRepo;
-        private readonly ITokenService _tokenService;
-
-        public AuthController(IAuthRepo userRepo, ITokenService tokenService)
-        {
-            _userRepo = userRepo;
-            _tokenService = tokenService;
-        }
+        private readonly IAuthRepo _userRepo = userRepo;
+        private readonly ITokenService _tokenService = tokenService;
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("Login")]
+        [Route(template:"Login")]
         public ActionResult Login([FromBody] UserAuthRequest userLogin)
         {
             try
             {
                 var roleId = _userRepo.CheckRole(userLogin.Email, userLogin.Password);
 
-                var user = new UserAuthRequest() { Email = userLogin.Email, UserRole = roleId };
+                var user = new UserAuthRequest() { Email = userLogin.Email };
 
                 var token = _tokenService.CreateToken(user.Email, roleId.ToString());
                 return Ok(token);
@@ -41,34 +35,17 @@ namespace AuthMarket.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("AddAdmin")]
-        public ActionResult AddAdmin([FromBody] UserAuthRequest userLogin)
-        {
-            try
-            {
-                _userRepo.AddUser(userLogin.Email, userLogin.Password, RoleType.Admin);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
-            return Ok();
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        [Route("AddUser")]
+        [Route(template: "AddUser")]
         public ActionResult AddUser([FromBody] UserAuthRequest userLogin)
         {
             try
             {
-                _userRepo.AddUser(userLogin.Email, userLogin.Password, RoleType.User);
+                return Ok(_userRepo.AddUser(userLogin.Email, userLogin.Password));
             }
             catch (Exception e)
             {
                 return StatusCode(500, e.Message);
             }
-            return Ok();
         }
     }
 }
