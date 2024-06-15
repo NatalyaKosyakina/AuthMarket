@@ -7,13 +7,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthMarket.Repo
 {
-    public class AuthRepo (AuthContext context) : IAuthRepo
+    public class AuthRepo : IAuthRepo
     {
-        private readonly AuthContext _context = context;
+        private readonly AuthContext _context;
+        private readonly ITokenService _tokenService;
 
+        public AuthRepo(AuthContext context, ITokenService tokenService)
+        {
+            _context = context;
+            _tokenService = tokenService;
+        }
         public int AddUser(string email, string password)
         {
-            bool thisIsAdmin = _context.Users.Count() == 0;
+            bool thisIsAdmin = !_context.Users.Any();
             User? user = null;
             if (!thisIsAdmin)
             {
@@ -28,8 +34,10 @@ namespace AuthMarket.Repo
                     Salt = new byte[16]
                 };
                 new Random().NextBytes(user.Salt);
-                var data = Encoding.UTF8.GetBytes(password).Concat(user.Salt).ToArray();
-                user.Password = SHA512.HashData(data);
+
+                var data = Encoding.ASCII.GetBytes(password).Concat(user.Salt).ToArray();
+                SHA512 sha = new SHA512Managed();
+                user.Password = sha.ComputeHash(data);
                 if (thisIsAdmin)
                 {
                     user.RoleID = RoleType.Admin;
@@ -44,7 +52,7 @@ namespace AuthMarket.Repo
             return user.Id;
         }
 
-        public RoleType CheckRole(string email, string password)
+        public string CheckRole(string email, string password)
         {
             var user = _context.Users.FirstOrDefault(user => user.Email.Equals(email));
             if (user == null)
@@ -53,16 +61,29 @@ namespace AuthMarket.Repo
             }
             else
             {
-                var hash = SHA512.HashData(Encoding.UTF8.GetBytes(password).Concat(user.Salt).ToArray());
-                if (hash.Equals(user.Password))
+                if (CheckPassword(user, password))
                 {
-                    return user.RoleID;
+                    string roleName = "User";
+                    if (user.RoleID.Equals(RoleType.Admin))
+                    {
+                        roleName = user.RoleID.ToString();
+                    }
+
+                    return _tokenService.CreateToken(user.Email, roleName);
                 }
                 else
                 {
                     throw new Exception("Wrong password");
                 }
             }
+        }
+
+        public static bool CheckPassword(User user, string password)
+        {
+            byte[] data = Encoding.ASCII.GetBytes(password).Concat(user.Salt).ToArray();
+            SHA512 sha = new SHA512Managed();
+            byte[] hash = sha.ComputeHash(data);
+            return hash.SequenceEqual(user.Password);
         }
     }
 }

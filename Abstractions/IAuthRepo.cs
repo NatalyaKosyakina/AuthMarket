@@ -5,6 +5,6 @@ namespace AuthMarket.Abstractions
     public interface IAuthRepo
     {
         public int AddUser(string username, string password);
-        public RoleType CheckRole(string email, string password);
+        public string CheckRole(string email, string password);
     }
 }
